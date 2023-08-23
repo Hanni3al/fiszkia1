@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nauka Angielskiego</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #ffcccc; /* Różowy kolor tła strony */
+            margin: 0;
+        }
+        .quiz-container {
+            background-color: #fff; /* Biała ramka wokół zawartości */
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Cień ramki */
+            width: 400px;
+            margin: 160px auto; /* Wyśrodkowanie na stronie */
+        }
+        .question {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .option {
+            margin: 10px 0;
+            cursor: pointer;
+            padding: 10px;
+            background-color: #007BFF;
+            color: #fff;
+            width: 100%;
+        }
+        .option:hover {
+            background-color: #0056b3;
+        }
+        .correct {
+            background-color: #28a745;
+        }
+        .incorrect {
+            background-color: #dc3545;
+        }
+        .result {
+            font-size: 20px;
+            margin-top: 20px;
+            color: #28a745;
+        }
+        .play-again {
+            margin-top: 20px;
+            font-size: 16px;
+            cursor: pointer;
+            color: #007BFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div class="question">
+            <p id="word">1. a man</p>
+        </div>
+        <div class="options">
+            <div class="option" onclick="checkAnswer('mężczyzna', this)">mężczyzna</div>
+            <div class="option" onclick="checkAnswer('kobieta', this)">kobieta</div>
+            <div class="option" onclick="checkAnswer('pies', this)">pies</div>
+        </div>
+        <div class="result" id="result"></div>
+        <div class="play-again" id="play-again" style="display: none;">Chcesz zagrać jeszcze raz?</div>
+    </div>
+
+    <script>
+        const words = [
+            { word: "1. a man", correctAnswer: "mężczyzna" },
+            { word: "2. a woman", correctAnswer: "kobieta" },
+            { word: "3. she eats", correctAnswer: "ona je" },
+            { word: "4. I am", correctAnswer: "jestem" },
+            { word: "5. It reads", correctAnswer: "czyta to" },
+            { word: "6. He has", correctAnswer: "on ma" },
+            { word: "7. You have", correctAnswer: "ty masz" },
+            { word: "8. He eats", correctAnswer: "on je" },
+            { word: "9. Dog", correctAnswer: "pies" },
+            { word: "10. Cat", correctAnswer: "kot" },
+            { word: "11. Girl", correctAnswer: "dziewczynka" },
+            { word: "12. Boy", correctAnswer: "chłopak" },
+            { word: "13. Boys", correctAnswer: "chłopaki" },
+            { word: "14. Woman", correctAnswer: "kobieta" },
+            { word: "15. I drink", correctAnswer: "ja piję" },
+            { word: "16. You are", correctAnswer: "wy jesteście" },
+            { word: "17. They read", correctAnswer: "oni czytają" },
+            { word: "18. Brother", correctAnswer: "brat" },
+            { word: "19. Sister", correctAnswer: "siostra" },
+            // Dodaj pozostałe słowa w tej samej formie.
+        ];
+
+        let currentWordIndex = 0;
+        let gameOver = false;
+
+        function nextWord() {
+            if (gameOver) {
+                return;
+            }
+
+            const wordElement = document.getElementById("word");
+            const resultElement = document.getElementById("result");
+            const optionsElement = document.querySelector(".options");
+
+            if (currentWordIndex < words.length) {
+                const currentWord = words[currentWordIndex];
+                wordElement.textContent = currentWord.word;
+                resultElement.textContent = "";
+                wordElement.classList.remove("correct", "incorrect");
+
+                optionsElement.innerHTML = "";
+
+                const uniqueOptions = getUniqueOptions(currentWord.correctAnswer);
+                const shuffledOptions = shuffleArray([
+                    currentWord.correctAnswer,
+                    ...uniqueOptions.slice(0, 2),
+                ]);
+
+                shuffledOptions.forEach((option) => {
+                    const optionElement = document.createElement("div");
+                    optionElement.classList.add("option");
+                    optionElement.textContent = option;
+                    optionElement.onclick = () => checkAnswer(option, currentWord.correctAnswer, optionElement);
+                    optionsElement.appendChild(optionElement);
+                });
+            } else {
+                wordElement.textContent = "Koniec gry!";
+                resultElement.textContent = "";
+                optionsElement.innerHTML = "";
+
+                const playAgainElement = document.getElementById("play-again");
+                playAgainElement.style.display = "block";
+                playAgainElement.onclick = () => resetGame();
+            }
+        }
+
+        function checkAnswer(selectedAnswer, correctAnswer, optionElement) {
+            if (gameOver) {
+                return;
+            }
+
+            const resultElement = document.getElementById("result");
+            const wordElement = document.getElementById("word");
+
+            if (selectedAnswer === correctAnswer) {
+                resultElement.innerText = "Poprawna odpowiedź!";
+                optionElement.classList.add("correct");
+            } else {
+                resultElement.innerText =
+                    "Błędna odpowiedź. Poprawna odpowiedź to: " + correctAnswer;
+                optionElement.classList.add("incorrect");
+            }
+
+            currentWordIndex++;
+            setTimeout(nextWord, 1000); // Przełącz na kolejne słowo po 1,5 sekundy.
+        }
+
+        function resetGame() {
+            currentWordIndex = 0;
+            gameOver = false;
+            document.getElementById("play-again").style.display = "none";
+            nextWord();
+        }
+
+        function getUniqueOptions(correctAnswer) {
+            const uniqueOptions = [];
+
+            for (let i = 0; i < words.length; i++) {
+                const word = words[i];
+                if (word.correctAnswer !== correctAnswer) {
+                    uniqueOptions.push(word.correctAnswer);
+                }
+            }
+
+            return shuffleArray(uniqueOptions).filter((option, index, self) => self.indexOf(option) === index);
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        nextWord();
+    </script>
+</body>
+</html>
